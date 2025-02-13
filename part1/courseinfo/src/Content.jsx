@@ -1,7 +1,7 @@
 import Part from "./Part"
 
 const Content = (props) => {
-    const { parts} = props;
+    const { parts } = props;
 
     return (
       <div>

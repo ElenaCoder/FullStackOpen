@@ -1,5 +1,4 @@
 const Total = (props) => {
-  console.log(props);
   const { parts } = props;
 
   return (
