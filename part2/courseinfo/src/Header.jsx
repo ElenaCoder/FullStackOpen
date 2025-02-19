@@ -1,5 +1,4 @@
 const Header = (props) => {
-  console.log(props);
   const { name } = props;
 
   return (
