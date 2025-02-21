@@ -1,13 +1,43 @@
+import { useState } from 'react';
 
-function App() {
+const App = () => {
+    const [persons, setPersons] = useState([{ name: 'Arto Hellas' }]);
+    const [newName, setNewName] = useState('');
 
-  return (
-    <>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    const handleInput = (e) => {
+        console.log(e.target.value);
+        setNewName(e.target.value);
+    };
 
-export default App
+    const handleAddOnSubmit = () => {
+      event.preventDefault();
+        const newPersonObject = {
+            name: newName,
+        };
+        setPersons(persons.concat(newPersonObject));
+        setNewName('');
+    };
+
+    return (
+        <div>
+            <h2>Phonebook</h2>
+            <form onSubmit={handleAddOnSubmit}>
+                <div>
+                    name:
+                    <input value={newName} onChange={handleInput} />
+                </div>
+                <div>
+                    <button type='submit'>add</button>
+                </div>
+            </form>
+            <h2>Numbers</h2>
+            <ul>
+                {persons.map((person, i) => (
+                    <li key={i}>{person.name}</li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
+export default App;
