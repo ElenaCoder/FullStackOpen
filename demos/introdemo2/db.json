@@ -20,7 +20,7 @@
     {
       "id": "1",
       "content": "HTML is easy",
-      "important": true
+      "important": false
     },
     {
       "id": "2",
@@ -40,6 +40,11 @@
     {
       "id": "5",
       "content": "a new note...2",
+      "important": false
+    },
+    {
+      "id": "ff73",
+      "content": "a new note...3",
       "important": false
     }
   ]
