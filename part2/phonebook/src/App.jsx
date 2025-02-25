@@ -25,8 +25,42 @@ const App = () => {
     const handleAddOnSubmit = (event) => {
         event.preventDefault();
 
-        if (persons.some((person) => person.name === newName)) {
-            alert(`${newName} is already added to phonebook`);
+        const existingPerson = persons.find(
+            (person) => person.name === newName,
+        );
+
+        if (existingPerson) {
+            const confirmUpdate = window.confirm(
+                `${newName} is already added to phonebook, replace the old number with a new one?`,
+            );
+
+            if (confirmUpdate) {
+                const updatedPerson = { ...existingPerson, number: newNumber };
+
+                personService
+                    .updatePerson(existingPerson.id, updatedPerson)
+                    .then((returnedPerson) => {
+                        setPersons(
+                            persons.map((person) =>
+                                person.id !== existingPerson.id
+                                    ? person
+                                    : returnedPerson,
+                            ),
+                        );
+                        setNewName('');
+                        setNewNumber('');
+                    })
+                    .catch((error) => {
+                        alert(
+                            `Failed to update ${newName}. They may have been removed from the server.`,
+                        );
+                        setPersons(
+                            persons.filter(
+                                (person) => person.id !== existingPerson.id,
+                            ),
+                        );
+                    });
+            }
             return;
         }
 
@@ -50,7 +84,7 @@ const App = () => {
         const person = persons.find((p) => p.id === id);
         if (window.confirm(`Delete ${person.name}?`)) {
             personService.deletePerson(id).then(() => {
-                setPersons(persons.filter(p => p.id !== id));
+                setPersons(persons.filter((p) => p.id !== id));
             });
         }
     };
