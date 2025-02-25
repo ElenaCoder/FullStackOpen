@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
@@ -14,7 +13,7 @@ const App = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        personService.getAll().then((initialPersons) => {
+        personService.getAllPersons().then((initialPersons) => {
             setPersons(initialPersons);
         });
     }, []);
@@ -36,7 +35,7 @@ const App = () => {
             number: newNumber,
         };
 
-        personService.create(newPersonObject).then((returnedPerson) => {
+        personService.createPerson(newPersonObject).then((returnedPerson) => {
             setPersons(persons.concat(returnedPerson));
             setNewName('');
             setNewNumber('');
@@ -46,6 +45,15 @@ const App = () => {
     const filteredPersons = persons.filter((person) =>
         person.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
+
+    const handleDeletePerson = (id) => {
+        const person = persons.find((p) => p.id === id);
+        if (window.confirm(`Delete ${person.name}?`)) {
+            personService.deletePerson(id).then(() => {
+                setPersons(persons.filter(p => p.id !== id));
+            });
+        }
+    };
 
     return (
         <div>
@@ -65,7 +73,10 @@ const App = () => {
             />
 
             <h2>Numbers</h2>
-            <Persons persons={filteredPersons} />
+            <Persons
+                persons={filteredPersons}
+                deletePerson={handleDeletePerson}
+            />
         </div>
     );
 };
