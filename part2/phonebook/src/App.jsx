@@ -12,7 +12,10 @@ const App = () => {
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [notification, setNotification] = useState(null);
+    const [notification, setNotification] = useState({
+        message: null,
+        type: '',
+    });
 
     useEffect(() => {
         personService.getAllPersons().then((initialPersons) => {
@@ -49,13 +52,30 @@ const App = () => {
                                     : returnedPerson,
                             ),
                         );
+                        setNotification({
+                            message: `Updated '${returnedPerson.name}'`,
+                            type: 'success',
+                        });
+                        setTimeout(() => {
+                            setNotification({
+                                message: null,
+                                type: '',
+                            });
+                        }, 5000);
                         setNewName('');
                         setNewNumber('');
                     })
                     .catch((error) => {
-                        alert(
-                            `Failed to update ${newName}. They may have been removed from the server.`,
-                        );
+                        setNotification({
+                            message: `Information of '${newName}' has already removed from the server.`,
+                            type: 'error',
+                        });
+                        setTimeout(() => {
+                            setNotification({
+                                message: null,
+                                type: '',
+                            });
+                        }, 5000);
                         setPersons(
                             persons.filter(
                                 (person) => person.id !== existingPerson.id,
@@ -71,15 +91,35 @@ const App = () => {
             number: newNumber,
         };
 
-        personService.createPerson(newPersonObject).then((returnedPerson) => {
-            setNotification(`Added '${returnedPerson.name}'`);
-            setTimeout(() => {
-                setNotification(null);
-            }, 5000);
-            setPersons(persons.concat(returnedPerson));
-            setNewName('');
-            setNewNumber('');
-        });
+        personService
+            .createPerson(newPersonObject)
+            .then((returnedPerson) => {
+                setNotification({
+                    message: `Added '${returnedPerson.name}'`,
+                    type: 'success',
+                });
+                setTimeout(() => {
+                    setNotification({
+                        message: null,
+                        type: '',
+                    });
+                }, 5000);
+                setPersons(persons.concat(returnedPerson));
+                setNewName('');
+                setNewNumber('');
+            })
+            .catch((error) => {
+                setNotification({
+                    message: `Failed to add '${newName}'`,
+                    type: 'error',
+                });
+                setTimeout(() => {
+                    setNotification({
+                        message: null,
+                        type: '',
+                    });
+                }, 5000);
+            });
     };
 
     const filteredPersons = persons.filter((person) =>
@@ -89,16 +129,44 @@ const App = () => {
     const handleDeletePerson = (id) => {
         const person = persons.find((p) => p.id === id);
         if (window.confirm(`Delete ${person.name}?`)) {
-            personService.deletePerson(id).then(() => {
-                setPersons(persons.filter((p) => p.id !== id));
-            });
+            personService
+                .deletePerson(id)
+                .then(() => {
+                    setPersons(persons.filter((p) => p.id !== id));
+                    setNotification({
+                        message: `Deleted '${person.name}'`,
+                        type: 'success',
+                    });
+                    setTimeout(() => {
+                        setNotification({
+                            message: null,
+                            type: '',
+                        });
+                    }, 5000);
+                })
+                .catch((error) => {
+                    setNotification({
+                        message: `Error: '${person.name}' was already removed from the server.`,
+                        type: 'error',
+                    });
+                    setTimeout(() => {
+                        setNotification({
+                            message: null,
+                            type: '',
+                        });
+                    }, 5000);
+                    setPersons(persons.filter((p) => p.id !== id));
+                });
         }
     };
 
     return (
         <div>
             <h2>Phonebook</h2>
-            <Notification message={notification} />
+            <Notification
+                message={notification?.message}
+                type={notification?.type}
+            />
             <Filter
                 searchTerm={searchTerm}
                 onSearchChange={handleSearchChange}
