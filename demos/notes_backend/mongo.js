@@ -1,11 +1,14 @@
+require('dotenv').config(); // Load environment variables
+
 const mongoose = require('mongoose')
 
-if (process.argv.length < 3) {
-  console.log('give password as argument')
-  process.exit(1)
-}
+const password = process.env.MONGO_PASSWORD; // Get password from .env
 
-const password = process.argv[2]
+// if (process.argv.length < 3) {
+//   console.log('give password as argument')
+//   process.exit(1)
+// }
+// const password = process.argv[2]
 
 const url = `mongodb+srv://potapovaes:${password}@cluster0.8yaog.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`
 
