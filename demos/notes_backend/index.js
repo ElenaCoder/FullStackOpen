@@ -54,10 +54,34 @@ app.post('/api/notes', (request, response) => {
   })
 })
 
+app.put('/api/notes/:id', (request, response, next) => {
+  const body = request.body
+
+  const note = {
+    content: body.content,
+    important: body.important,
+  }
+
+  Note.findByIdAndUpdate(request.params.id, note, { new: true })
+    .then(updatedNote => {
+      if (updatedNote) {
+        response.json(updatedNote)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
+})
+
 app.get('/api/notes/:id', (request, response) => {
   Note.findById(request.params.id).then(note => {
-    response.json(note)
+    if (note) {
+      response.json(note)
+    } else {
+      response.status(404).end()
+    }
   })
+  .catch(error => next(error))
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -69,7 +93,7 @@ app.delete('/api/notes/:id', (request, response) => {
         response.status(404).json({ error: 'Note not found' });
       }
     })
-    .catch(error => response.status(400).json({ error: 'Invalid ID format' }));
+    .catch(error => next(error))
 });
 
 const PORT = process.env.PORT || 3001
