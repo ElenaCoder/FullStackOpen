@@ -1,5 +1,7 @@
 import axios from 'axios';
-const baseUrl = '/api/persons';
+const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://fullstack-open-part3-phonebook-qlu1.onrender.com/api/persons'
+    : '/api/persons';
 
 const getAllPersons = () => {
     const request = axios.get(baseUrl);
