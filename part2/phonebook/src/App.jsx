@@ -32,11 +32,11 @@ const App = () => {
 
         if (!newNumber.trim()) {
             setNotification({
-                message: "Number cannot be empty.",
-                type: "error",
+                message: 'Number cannot be empty.',
+                type: 'error',
             });
             setTimeout(() => {
-                setNotification({ message: null, type: "" });
+                setNotification({ message: null, type: '' });
             }, 5000);
             return;
         }
@@ -80,19 +80,21 @@ const App = () => {
                         if (error.response && error.response.data.error) {
                             setNotification({
                                 message: error.response.data.error,
-                                type: "error",
+                                type: 'error',
                             });
                         } else {
                             setNotification({
                                 message: `Information of '${newName}' has already been removed from the server.`,
-                                type: "error",
+                                type: 'error',
                             });
                             setPersons(
-                                persons.filter((person) => person.id !== existingPerson.id)
+                                persons.filter(
+                                    (person) => person.id !== existingPerson.id,
+                                ),
                             );
                         }
                         setTimeout(() => {
-                            setNotification({ message: null, type: "" });
+                            setNotification({ message: null, type: '' });
                         }, 5000);
                     });
             }

@@ -1,7 +1,8 @@
 import axios from 'axios';
-const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://fullstack-open-part3-phonebook-qlu1.onrender.com/api/persons'
-    : '/api/persons';
+const baseUrl =
+    process.env.NODE_ENV === 'production'
+        ? 'https://fullstack-open-part3-phonebook-qlu1.onrender.com/api/persons'
+        : '/api/persons';
 
 const getAllPersons = () => {
     const request = axios.get(baseUrl);
@@ -14,8 +15,10 @@ const createPerson = (newObject) => {
 };
 
 const updatePerson = (id, updatedPerson) => {
-    return axios.put(`${baseUrl}/${id}`, updatedPerson).then(response => response.data);
-  };
+    return axios
+        .put(`${baseUrl}/${id}`, updatedPerson)
+        .then((response) => response.data);
+};
 
 const deletePerson = (id) => {
     const request = axios.delete(`${baseUrl}/${id}`);
