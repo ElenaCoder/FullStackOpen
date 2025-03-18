@@ -9,9 +9,9 @@ const errorHandler = (error, request, response, next) => {
   console.error('Error message:', error.message)
 
   if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' });
+    return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message });
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
@@ -43,8 +43,8 @@ app.post('/api/notes', (request, response, next) => {
   })
 
   note.save()
-   .then(savedNote => response.json(savedNote))
-   .catch(error => next(error));
+    .then(savedNote => response.json(savedNote))
+    .catch(error => next(error))
 })
 
 app.put('/api/notes/:id', (request, response, next) => {
@@ -66,7 +66,7 @@ app.put('/api/notes/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
   Note.findById(request.params.id).then(note => {
     if (note) {
       response.json(note)
@@ -74,20 +74,20 @@ app.get('/api/notes/:id', (request, response) => {
       response.status(404).end()
     }
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
-app.delete('/api/notes/:id', (request, response) => {
+app.delete('/api/notes/:id', (request, response, next) => {
   Note.findByIdAndDelete(request.params.id)
     .then(result => {
       if (result) {
-        response.status(204).end();
+        response.status(204).end()
       } else {
-        response.status(404).json({ error: 'Note not found' });
+        response.status(404).json({ error: 'Note not found' })
       }
     })
     .catch(error => next(error))
-});
+})
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
