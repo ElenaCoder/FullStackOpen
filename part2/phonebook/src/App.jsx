@@ -30,6 +30,17 @@ const App = () => {
     const handleAddOnSubmit = (event) => {
         event.preventDefault();
 
+        if (!newNumber.trim()) {
+            setNotification({
+                message: "Number cannot be empty.",
+                type: "error",
+            });
+            setTimeout(() => {
+                setNotification({ message: null, type: "" });
+            }, 5000);
+            return;
+        }
+
         const existingPerson = persons.find(
             (person) => person.name === newName,
         );
@@ -66,21 +77,23 @@ const App = () => {
                         setNewNumber('');
                     })
                     .catch((error) => {
-                        setNotification({
-                            message: `Information of '${newName}' has already removed from the server.`,
-                            type: 'error',
-                        });
-                        setTimeout(() => {
+                        if (error.response && error.response.data.error) {
                             setNotification({
-                                message: null,
-                                type: '',
+                                message: error.response.data.error,
+                                type: "error",
                             });
+                        } else {
+                            setNotification({
+                                message: `Information of '${newName}' has already been removed from the server.`,
+                                type: "error",
+                            });
+                            setPersons(
+                                persons.filter((person) => person.id !== existingPerson.id)
+                            );
+                        }
+                        setTimeout(() => {
+                            setNotification({ message: null, type: "" });
                         }, 5000);
-                        setPersons(
-                            persons.filter(
-                                (person) => person.id !== existingPerson.id,
-                            ),
-                        );
                     });
             }
             return;
@@ -110,7 +123,7 @@ const App = () => {
             })
             .catch((error) => {
                 setNotification({
-                    message: `Failed to add '${newName}'`,
+                    message: error.response.data.error,
                     type: 'error',
                 });
                 setTimeout(() => {
