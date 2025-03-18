@@ -5,26 +5,17 @@ const cors = require('cors')
 
 const app = express()
 
-app.use(cors())
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
 
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    important: true
-  },
-  {
-    id: 2,
-    content: "Browser can execute only JavaScript",
-    important: false
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
   }
-]
 
+  next(error)
+}
+
+app.use(cors())
 app.use(express.json())
 
 app.get('/', (request, response) => {
@@ -95,6 +86,13 @@ app.delete('/api/notes/:id', (request, response) => {
     })
     .catch(error => next(error))
 });
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
