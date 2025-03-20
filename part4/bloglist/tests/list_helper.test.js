@@ -19,23 +19,37 @@ const multipleBlogs = [
     {
         _id: '1',
         title: 'Blog 1',
-        author: 'Author A',
+        author: 'Robert C. Martin',
         url: 'http://example.com/1',
         likes: 2,
     },
     {
         _id: '2',
         title: 'Blog 2',
-        author: 'Author B',
+        author: 'Edsger W. Dijkstra',
         url: 'http://example.com/2',
         likes: 3,
     },
     {
         _id: '3',
         title: 'Blog 3',
-        author: 'Author C',
+        author: 'Robert C. Martin',
         url: 'http://example.com/3',
         likes: 7,
+    },
+    {
+        _id: '4',
+        title: 'Blog 4',
+        author: 'Edsger W. Dijkstra',
+        url: 'http://example.com/4',
+        likes: 4,
+    },
+    {
+        _id: '5',
+        title: 'Blog 5',
+        author: 'Robert C. Martin',
+        url: 'http://example.com/5',
+        likes: 1,
     },
 ];
 
@@ -60,7 +74,7 @@ describe('total likes', () => {
 
     test('of a bigger list is calculated correctly', () => {
         const result = listHelper.totalLikes(multipleBlogs);
-        assert.strictEqual(result, 12); // 2 + 3 + 7 = 12
+        assert.strictEqual(result, 17); // 2 + 3 + 7 + 4 + 1= 12
     });
 });
 
@@ -83,8 +97,25 @@ describe('favorite blog', () => {
         const result = listHelper.favoriteBlog(multipleBlogs);
         assert.deepStrictEqual(result, {
             title: 'Blog 3',
-            author: 'Author C',
+            author: 'Robert C. Martin',
             likes: 7,
-        });
+        },);
+    });
+});
+
+describe('most blogs', () => {
+    test('of empty list is null', () => {
+        const result = listHelper.mostBlogs(emptyList);
+        assert.strictEqual(result, null);
+    });
+
+    test('when list has only one blog, returns that author with one blog', () => {
+        const result = listHelper.mostBlogs(listWithOneBlog);
+        assert.deepStrictEqual(result, { author: 'Edsger W. Dijkstra', blogs: 1 });
+    });
+
+    test('of a bigger list returns the author with the most blogs', () => {
+        const result = listHelper.mostBlogs(multipleBlogs);
+        assert.deepStrictEqual(result, { author: 'Robert C. Martin', blogs: 3 });
     });
 });
