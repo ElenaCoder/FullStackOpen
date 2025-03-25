@@ -54,6 +54,40 @@ test('blogs have an id property instead of _id', async () => {
   })
 })
 
+test('a valid blog can be added', async () => {
+  const newBlog = {
+    title: 'Test Blog',
+    author: 'Elena Golovanova',
+    url: 'https://example.com/test-blog',
+    likes: 5
+  }
+
+  // Get initial blogs count
+  const blogsAtStart = await Blog.find({})
+  const initialCount = blogsAtStart.length
+
+  // Send POST request
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201) // Ensure successful creation
+    .expect('Content-Type', /application\/json/)
+
+  // Fetch blogs after the request
+  const blogsAtEnd = await Blog.find({})
+  const finalCount = blogsAtEnd.length
+
+  // Ensure blog count increased by 1
+  assert.strictEqual(finalCount, initialCount + 1, 'Blog count should increase by 1')
+
+  // Verify that the new blog is in the database
+  const savedBlog = blogsAtEnd.find(blog => blog.title === newBlog.title)
+  assert.ok(savedBlog, 'Saved blog should exist in database')
+  assert.strictEqual(savedBlog.author, newBlog.author, 'Author should match')
+  assert.strictEqual(savedBlog.url, newBlog.url, 'URL should match')
+  assert.strictEqual(savedBlog.likes, newBlog.likes, 'Likes should match')
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
