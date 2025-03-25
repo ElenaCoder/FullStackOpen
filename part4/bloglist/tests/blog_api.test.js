@@ -88,6 +88,24 @@ test('a valid blog can be added', async () => {
   assert.strictEqual(savedBlog.likes, newBlog.likes, 'Likes should match')
 })
 
+test('if likes property is missing, it defaults to 0', async () => {
+  const newBlog = {
+    title: 'Blog without likes',
+    author: 'Test Author',
+    url: 'https://example.com/no-likes'
+    // 'likes' property is intentionally missing
+  }
+
+  const response = await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)  // Ensure blog is created successfully
+    .expect('Content-Type', /application\/json/)
+
+  // Verify that likes defaults to 0
+  assert.strictEqual(response.body.likes, 0, 'Likes should default to 0 when missing')
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
