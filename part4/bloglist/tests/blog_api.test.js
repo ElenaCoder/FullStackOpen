@@ -44,6 +44,16 @@ test('correct amount of blogs is returned', async () => {
   assert.strictEqual(response.body.length, initialBlogs.length)
 })
 
+test('blogs have an id property instead of _id', async () => {
+  const response = await api.get('/api/blogs')
+
+  response.body.forEach(blog => {
+    assert.ok(blog.id, 'Blog should have an id property')
+    assert.strictEqual(typeof blog.id, 'string', 'id should be a string')
+    assert.strictEqual(blog._id, undefined, '_id should not be present')
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
