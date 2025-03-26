@@ -1,4 +1,4 @@
-const { test, after, beforeEach } = require('node:test')
+const { test, after, beforeEach, describe  } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
@@ -130,6 +130,31 @@ test('fails with status 400 if url is missing', async () => {
     .post('/api/blogs')
     .send(newBlog)
     .expect(400)
+})
+
+describe('deletion of a blog post', () => {
+  test('successfully deletes a blog post', async () => {
+    const blogsAtStart = await Blog.find({})
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await Blog.find({})
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+
+    const ids = blogsAtEnd.map(blog => blog.id)
+    assert(!ids.includes(blogToDelete.id))
+  })
+
+  test('returns 404 for deleting a non-existing blog', async () => {
+    const nonExistingId = '605c72b75e48f3659f83a3a1'
+
+    await api
+      .delete(`/api/blogs/${nonExistingId}`)
+      .expect(404)
+  })
 })
 
 after(async () => {
