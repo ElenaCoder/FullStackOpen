@@ -4,6 +4,7 @@ const middleware = require('./utils/middleware')
 const morgan = require('./utils/morganConfig')
 
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
 
 const express = require('express')
 const cors = require('cors')
@@ -26,6 +27,7 @@ app.use(
 )
 
 app.use('/api/blogs', blogsRouter)
+app.use('/api/users', usersRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
