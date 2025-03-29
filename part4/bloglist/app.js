@@ -3,6 +3,7 @@ const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
 const morgan = require('./utils/morganConfig')
 
+const loginRouter = require('./controllers/login')
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 
@@ -26,6 +27,7 @@ app.use(
   ),
 )
 
+app.use('/api/login', loginRouter)
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 

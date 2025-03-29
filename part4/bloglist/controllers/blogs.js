@@ -1,10 +1,23 @@
 const blogsRouter = require('express').Router()
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
+
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
+const getTokenFrom = (request) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
+
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog
-    .find({}).populate('user', { username: 1, name: 1 })
+  const blogs = await Blog.find({}).populate('user', {
+    username: 1,
+    name: 1,
+  })
   response.json(blogs)
 })
 
@@ -16,9 +29,16 @@ blogsRouter.post('/', async (request, response) => {
       return response.status(400).json({ error: 'User ID is required' })
     }
 
-    const user = await User.findById(userId)
+    const decodedToken = jwt.verify(getTokenFrom(request), config.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token invalid' })
+    }
+
+    const user = await User.findById(decodedToken.id)
     if (!user) {
-      return response.status(400).json({ error: `User with ID ${userId} not found` })
+      return response
+        .status(400)
+        .json({ error: `User with ID ${userId} not found` })
     }
 
     const blog = new Blog({
@@ -60,7 +80,7 @@ blogsRouter.put('/:id', async (request, response) => {
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
       { likes },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     )
 
     if (!updatedBlog) {
@@ -73,6 +93,5 @@ blogsRouter.put('/:id', async (request, response) => {
     response.status(500).json({ error: 'Internal server error' })
   }
 })
-
 
 module.exports = blogsRouter
