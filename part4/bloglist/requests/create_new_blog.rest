@@ -1,11 +1,11 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVsZW5hIiwiaWQiOiI2N2U2YWZiMDQzMDJlYTVkNzAxZTc5NGEiLCJpYXQiOjE3NDMxODEzODAsImV4cCI6MTc0MzE4NDk4MH0.7t11-YkYXFRFc2zLDjVhKpYPJ_fbvJ2zDRzV6g4vDfc
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlJvbWFuIiwiaWQiOiI2N2U2OWE3ZWI1ODhjNmMyNjU4NjY2M2MiLCJpYXQiOjE3NDMyNDMzNTAsImV4cCI6MTc0MzI0Njk1MH0.MHTd4ymocQ7Orw0DfXFJ1PcJb-_Q-9AG0bUpeohEcKc
 
 {
   "title": "My Second Blog",
-  "author": "Dima",
+  "author": "Roman",
   "url": "https://example.com",
-  "likes": 1,
+  "likes": 2,
   "userId": "67e69a7eb588c6c26586663c"
 }
