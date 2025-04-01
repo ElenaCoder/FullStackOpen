@@ -1,9 +1,5 @@
 const blogsRouter = require('express').Router()
-const jwt = require('jsonwebtoken')
-const config = require('../utils/config')
-
 const Blog = require('../models/blog')
-const User = require('../models/user')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', {
@@ -15,23 +11,8 @@ blogsRouter.get('/', async (request, response) => {
 
 blogsRouter.post('/', async (request, response) => {
   try {
-    const { title, author, url, likes, userId } = request.body
-
-    if (!userId) {
-      return response.status(400).json({ error: 'User ID is required' })
-    }
-
-    const decodedToken = jwt.verify(request.token, config.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({ error: 'token invalid' })
-    }
-
-    const user = await User.findById(decodedToken.id)
-    if (!user) {
-      return response
-        .status(400)
-        .json({ error: `User with ID ${userId} not found` })
-    }
+    const { title, author, url, likes } = request.body
+    const user = request.user // Access the user from the request object
 
     const blog = new Blog({
       title,
@@ -43,6 +24,7 @@ blogsRouter.post('/', async (request, response) => {
 
     const savedBlog = await blog.save()
 
+    // Add the saved blog to the user's list of blogs
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
 
@@ -55,12 +37,7 @@ blogsRouter.post('/', async (request, response) => {
 blogsRouter.delete('/:id', async (request, response) => {
   try {
     const { id } = request.params
-
-    // Verify token
-    const decodedToken = jwt.verify(request.token, config.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({ error: 'Token invalid or missing' })
-    }
+    const user = request.user // Access the user from the request object
 
     // Find the blog by ID
     const blog = await Blog.findById(id)
@@ -68,13 +45,18 @@ blogsRouter.delete('/:id', async (request, response) => {
       return response.status(404).json({ error: 'Blog not found' })
     }
 
-    // Check if the user owns the blog
-    if (blog.user.toString() !== decodedToken.id.toString()) {
+    // Check if the user is the owner of the blog
+    if (blog.user.toString() !== user._id.toString()) {
       return response.status(403).json({ error: 'Not authorized to delete this blog' })
     }
 
-    // Delete the blog
+    //  Delete the blog from the Blog collection
     await Blog.findByIdAndDelete(id)
+
+    // Remove the blog reference from the user's blogs array
+    user.blogs = user.blogs.filter(blogId => blogId.toString() !== id)
+    await user.save()
+
     response.status(204).end()
   } catch (error) {
     console.error('Error deleting blog:', error)
