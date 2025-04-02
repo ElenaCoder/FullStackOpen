@@ -4,8 +4,12 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 
 const api = supertest(app)
+
+let token = ''
 
 const initialBlogs = [
   {
@@ -24,28 +28,41 @@ const initialBlogs = [
 
 beforeEach(async () => {
   await Blog.deleteMany({})
+  await User.deleteMany({}) // Clear users to avoid conflicts
 
-  const blogObjects = initialBlogs.map(blog => new Blog(blog))
-  const promiseArray = blogObjects.map(blog => blog.save())
-  await Promise.all(promiseArray)
+  // Create a test user
+  const passwordHash = await bcrypt.hash('testpassword', 10)
+  const user = new User({ username: 'testuser', passwordHash })
+  await user.save()
+
+  // Log in the user to get a token
+  const loginResponse = await api
+    .post('/api/login')
+    .send({ username: 'testuser', password: 'testpassword' })
+
+  token = loginResponse.body.token // Store the received token
+
+  const blogObjects = initialBlogs.map(blog => new Blog({ ...blog, user: user._id }))
+  await Promise.all(blogObjects.map(blog => blog.save()))
 })
 
 
 test('blogs are returned as JSON', async () => {
   await api
     .get('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .expect(200)
     .expect('Content-Type', /application\/json/)
 })
 
 test('correct amount of blogs is returned', async () => {
-  const response = await api.get('/api/blogs')
+  const response = await api.get('/api/blogs').set('Authorization', `Bearer ${token}`)
 
   assert.strictEqual(response.body.length, initialBlogs.length)
 })
 
 test('blogs have an id property instead of _id', async () => {
-  const response = await api.get('/api/blogs')
+  const response = await api.get('/api/blogs').set('Authorization', `Bearer ${token}`)
 
   response.body.forEach(blog => {
     assert.ok(blog.id, 'Blog should have an id property')
@@ -69,6 +86,7 @@ test('a valid blog can be added', async () => {
   // Send POST request
   await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`) // Add token to the request
     .send(newBlog)
     .expect(201) // Ensure successful creation
     .expect('Content-Type', /application\/json/)
@@ -98,6 +116,7 @@ test('if likes property is missing, it defaults to 0', async () => {
 
   const response = await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(201)  // Ensure blog is created successfully
     .expect('Content-Type', /application\/json/)
@@ -115,6 +134,7 @@ test('fails with status 400 if title is missing', async () => {
 
   await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(400)
 })
@@ -128,6 +148,7 @@ test('fails with status 400 if url is missing', async () => {
 
   await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(400)
 })
@@ -139,6 +160,7 @@ describe('deletion of a blog post', () => {
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(204)
 
     const blogsAtEnd = await Blog.find({})
@@ -153,6 +175,7 @@ describe('deletion of a blog post', () => {
 
     await api
       .delete(`/api/blogs/${nonExistingId}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(404)
   })
 })
@@ -165,12 +188,31 @@ test('updates the number of likes for an existing blog', async () => {
 
   const response = await api
     .put(`/api/blogs/${blogToUpdate.id}`)
+    .set('Authorization', `Bearer ${token}`)
     .send(updatedData)
     .expect(200)
     .expect('Content-Type', /application\/json/)
 
   assert.strictEqual(response.body.likes, blogToUpdate.likes + 1, 'Likes should be incremented')
   assert.strictEqual(response.body.title, blogToUpdate.title, 'Title should remain unchanged')
+})
+
+test('adding a blog fails with 401 if token is missing', async () => {
+  const newBlog = {
+    title: 'Unauthorized Blog',
+    author: 'Hacker',
+    url: 'https://example.com/hack',
+    likes: 1
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(401) // Expect 401 Unauthorized
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await Blog.find({})
+  assert.strictEqual(blogsAtEnd.length, initialBlogs.length, 'Blog count should not change')
 })
 
 after(async () => {
